@@ -5,8 +5,29 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <!--<Button
+        android:id="@+id/btnHit"
+        android:text="JSON"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />-->
+
+    <TextView
+        android:id="@+id/tvJsonItem"
+        android:text="Application Festival"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+        android:id="@+id/recyclerViewNomsGroupes"
+        android:layout_below="@id/tvJsonItem"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <!--<androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_below="@id/tvJsonItem"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />-->
+
+
 </RelativeLayout>

@@ -64,9 +64,9 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
             super(itemView);
 
             // get the reference of item view's
-            name = (TextView) itemView.findViewById(R.id.name);
-            email = (TextView) itemView.findViewById(R.id.email);
-            mobileNo = (TextView) itemView.findViewById(R.id.mobileNo);
+            name = itemView.findViewById(R.id.name);
+            email = itemView.findViewById(R.id.email);
+            mobileNo = itemView.findViewById(R.id.mobileNo);
 
         }
     }
