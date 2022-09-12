@@ -39,6 +39,7 @@ public class CustomAdapterFestival extends RecyclerView.Adapter<CustomAdapterFes
             public void onClick(View view) {
                 // display a toast with person name on item click
                 Toast.makeText(context, nomsGroupes.get(position), Toast.LENGTH_SHORT).show();
+                // TODO : rediriger vers une nouvelle vue dans laquelle on passe un itent avec le nom du groupe
             }
         });
 
