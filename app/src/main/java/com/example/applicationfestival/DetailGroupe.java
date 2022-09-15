@@ -66,7 +66,7 @@ public class DetailGroupe extends AppCompatActivity {
 
     private void jsonParse(Context context) {
         // URL API of a specific group
-        String url = "https://daviddurand.info/D228/festival/info/"+nomGroupe;
+        String url = "https://daviddurand.info/D228/festival/info/" + nomGroupe;
 
         // We initialize a new JsonObjectRequest by specifying it's a GET request, the URL we request,
         // the JSON we send (null because GET request), what to do onResponse and what to do onErrorResponse.
@@ -80,7 +80,7 @@ public class DetailGroupe extends AppCompatActivity {
                             // we set the value of the TextViews with the corresponding key
                             nomArtisteTv.setText(infosGroupe.getString("artiste"));
                             // url with the image of the band
-                            urlImage = "https://daviddurand.info/D228/festival/illustrations/"+nomGroupe+"/image.jpg";
+                            urlImage = "https://daviddurand.info/D228/festival/illustrations/" + nomGroupe + "/image.jpg";
                             // display the image of the band with url previously reached
                             Glide.with(context).load(urlImage).into(imgGroupeIv);
                             // we set the TextView for the info about the band
@@ -88,11 +88,16 @@ public class DetailGroupe extends AppCompatActivity {
                             // info about the scene
                             sceneTv.setText("Scène : " + infosGroupe.getString("scene"));
                             // we set the TextView for the date of the concert
-                            dateTv.setText("Le "+ infosGroupe.getString("jour") + " à " + infosGroupe.getString("heure"));
+                            dateTv.setText("Le " + infosGroupe.getString("jour") + " à " + infosGroupe.getString("heure"));
                             // we get the url of the webpage of the band
                             urlWebPage = infosGroupe.getString("web");
-                            // we make the button clickable after we get the url web page
-                            webPageBtn.setClickable(true);
+                            // we make the button clickable after we get the url web page, if there is one
+                            if (!urlWebPage.isEmpty()) {
+                                webPageBtn.setClickable(true);
+                                webPageBtn.setVisibility(View.VISIBLE);
+                            } else { // else we hide the button
+                                webPageBtn.setVisibility(View.INVISIBLE);
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
