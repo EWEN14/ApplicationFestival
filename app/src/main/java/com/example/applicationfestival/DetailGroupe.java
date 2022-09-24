@@ -4,12 +4,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -25,6 +27,8 @@ import org.json.JSONObject;
 public class DetailGroupe extends AppCompatActivity {
 
     TextView nomArtisteTv;
+    String nomArtiste;
+    TextView star;
     ImageView imgGroupeIv;
     TextView textePresentationTv;
     TextView sceneTv;
@@ -35,6 +39,8 @@ public class DetailGroupe extends AppCompatActivity {
     Button webPageBtn;
     Button favoriBtn;
     Context context;
+    SharedPreferences pref;
+    SharedPreferences.Editor editor;
 
     private RequestQueue mQueue;
 
@@ -44,7 +50,12 @@ public class DetailGroupe extends AppCompatActivity {
         setContentView(R.layout.activity_detail_groupe);
         context = getApplicationContext();
 
+        // get the shared preferences for getting the favorites bands (key:value mechanism)
+        pref = getApplicationContext().getSharedPreferences("favoritesBands", 0);
+        editor = pref.edit();
+
         nomArtisteTv = findViewById(R.id.artiste);
+        star = findViewById(R.id.star);
         imgGroupeIv = findViewById(R.id.imgGroupe);
         textePresentationTv = findViewById(R.id.texte);
         sceneTv = findViewById(R.id.scene);
@@ -56,6 +67,9 @@ public class DetailGroupe extends AppCompatActivity {
         Bundle extras = intent.getExtras();
 
         nomGroupe = extras.getString("nom_groupe");
+
+        // show the star, full or empty depending if the band is in favorite
+        showStar();
 
         // Initializing a new request queue
         mQueue = Volley.newRequestQueue(this);
@@ -79,6 +93,7 @@ public class DetailGroupe extends AppCompatActivity {
                             JSONObject infosGroupe = response.getJSONObject("data");
                             // we set the value of the TextViews with the corresponding key
                             nomArtisteTv.setText(infosGroupe.getString("artiste"));
+                            nomArtiste = infosGroupe.getString("artiste");
                             // url with the image of the band
                             urlImage = "https://daviddurand.info/D228/festival/illustrations/" + nomGroupe + "/image.jpg";
                             // display the image of the band with url previously reached
@@ -113,9 +128,42 @@ public class DetailGroupe extends AppCompatActivity {
         mQueue.add(request);
     }
 
+    // go to the web page of the band
     public void goToWebPage(View view) {
         Uri webpage = Uri.parse(urlWebPage);
         Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
         startActivity(intent);
+    }
+
+    // add or remove the band from the favorite
+    public void favoriClick(View view) {
+        // if already in favorite, we remove the band from favorite
+        if (this.pref.getBoolean(nomGroupe, false)) {
+            this.editor.putBoolean(nomGroupe, false);
+            // save changes
+            editor.commit();
+            // change button text and star
+            this.favoriBtn.setText("Ajouter en favori");
+            this.star.setText("☆");
+            // display a toast to inform user the band is no more in favorite
+            Toast.makeText(context, nomArtiste+" retiré des favori", Toast.LENGTH_SHORT).show();
+        } else {
+            // else we put the band in favorite
+            this.editor.putBoolean(nomGroupe, true);
+            editor.commit();
+            this.favoriBtn.setText("Retirer des favoris");
+            this.star.setText("⭐");
+            Toast.makeText(context, nomArtiste+" ajouté aux favoris", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // in the beginning of the activity, we decide which star to put depending if
+    // the band is in favorite
+    private void showStar() {
+        if (this.pref.getBoolean(nomGroupe, false)) {
+            this.star.setText("⭐");
+        } else {
+            this.star.setText("☆");
+        }
     }
 }
