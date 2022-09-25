@@ -1,14 +1,21 @@
 package com.example.applicationfestival;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 public class InfosGroupe {
 
-    String code;
+    @SerializedName("code")
+    @Expose
+    private String code;
+    @SerializedName("message")
+    @Expose
+    private String message;
+    @SerializedName("data")
+    @Expose
+    private DataInfoGroupe data;
 
-    String message;
-
-    DataInfoGroupe data;
-
-    public InfosGroupe() {}
+    public  InfosGroupe() {}
 
     public InfosGroupe(String code, String message, DataInfoGroupe data) {
         this.code = code;
@@ -38,5 +45,14 @@ public class InfosGroupe {
 
     public void setData(DataInfoGroupe data) {
         this.data = data;
+    }
+
+    @Override
+    public String toString() {
+        return "InfosGroupe{" +
+                "code='" + code + '\'' +
+                ", message='" + message + '\'' +
+                ", data=" + data +
+                '}';
     }
 }

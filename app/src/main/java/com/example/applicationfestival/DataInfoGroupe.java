@@ -1,26 +1,39 @@
 package com.example.applicationfestival;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 public class DataInfoGroupe {
 
-    String artiste;
+    @SerializedName("artiste")
+    @Expose
+    private String artiste;
+    @SerializedName("texte")
+    @Expose
+    private String texte;
+    @SerializedName("web")
+    @Expose
+    private String web;
+    @SerializedName("image")
+    @Expose
+    private String image;
+    @SerializedName("scene")
+    @Expose
+    private String scene;
+    @SerializedName("jour")
+    @Expose
+    private String jour;
+    @SerializedName("heure")
+    @Expose
+    private String heure;
+    @SerializedName("time")
+    @Expose
+    private Integer time;
 
-    String texte;
+    public DataInfoGroupe() {
+    }
 
-    String web;
-
-    String image;
-
-    String scene;
-
-    String jour;
-
-    String heure;
-
-    int time;
-
-    public DataInfoGroupe() {}
-
-    public DataInfoGroupe(String artiste, String texte, String web, String image, String scene, String jour, String heure, int time) {
+    public DataInfoGroupe(String artiste, String texte, String web, String image, String scene, String jour, String heure, Integer time) {
         this.artiste = artiste;
         this.texte = texte;
         this.web = web;
@@ -87,11 +100,25 @@ public class DataInfoGroupe {
         this.heure = heure;
     }
 
-    public int getTime() {
+    public Integer getTime() {
         return time;
     }
 
-    public void setTime(int time) {
+    public void setTime(Integer time) {
         this.time = time;
+    }
+
+    @Override
+    public String toString() {
+        return "DataInfoGroupe{" +
+                "artiste='" + artiste + '\'' +
+                ", texte='" + texte + '\'' +
+                ", web='" + web + '\'' +
+                ", image='" + image + '\'' +
+                ", scene='" + scene + '\'' +
+                ", jour='" + jour + '\'' +
+                ", heure='" + heure + '\'' +
+                ", time=" + time +
+                '}';
     }
 }

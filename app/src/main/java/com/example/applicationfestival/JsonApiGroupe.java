@@ -10,5 +10,5 @@ public interface JsonApiGroupe {
     Call<ListeGroupe> getListe();
 
     @GET("info/{nom-groupe}")
-    Call<InfosGroupe> getFilterList(@Path("nom-groupe") String pathNomGroupe);
+    Call<InfosGroupe> getInfosGroupe(@Path("nom-groupe") String pathNomGroupe);
 }
