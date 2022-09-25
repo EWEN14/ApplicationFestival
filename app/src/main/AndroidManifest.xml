@@ -15,7 +15,7 @@
             android:name=".DetailGroupe"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".MainActivity_"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

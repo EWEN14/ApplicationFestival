@@ -1,33 +1,36 @@
 package com.example.applicationfestival;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
+import org.androidannotations.annotations.Background;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.UiThread;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import java.io.IOException;
 import java.util.ArrayList;
 
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+@EActivity
 public class MainActivity extends AppCompatActivity {
 
     // ArrayList for group names
     ArrayList<String> nomsGroupes = new ArrayList<>();
 
-    private RequestQueue mQueue;
+    ProgressDialog progressDialog;
+    ListeGroupe listeGroupe;
 
-    TextView txtJson;
+    private final String BASE_URL = "https://daviddurand.info/D228/festival/";
+    private static final String TAG_CALL_LISTE = "ListeGroupe";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,53 +42,64 @@ public class MainActivity extends AppCompatActivity {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerViewNomsGroupes.setLayoutManager(linearLayoutManager);
 
-        txtJson = findViewById(R.id.tvJsonItem);
-
-        // Initializing a new request queue
-        mQueue = Volley.newRequestQueue(this);
         // Perform a GET request to parse the JSON
-        jsonParse();
-
-        //  call the constructor of CustomAdapter to send the reference and data to Adapter
-        CustomAdapterFestival customAdapterFestival = new CustomAdapterFestival(MainActivity.this, nomsGroupes);
-        recyclerViewNomsGroupes.setAdapter(customAdapterFestival);  // set the Adapter to RecyclerView
-
+        jsonParseRetrofit(recyclerViewNomsGroupes);
     }
 
-    private void jsonParse() {
-        // URL API of group list
-        String url = "https://daviddurand.info/D228/festival/liste";
+    /**
+     * task executed in background, in a thread, thanks to the @Background annotation
+     * @param recyclerViewNomsGroupes
+     */
+    @Background
+    public void jsonParseRetrofit(RecyclerView recyclerViewNomsGroupes) {
+        // start to show the ProgressDialog
+        publishProgress(true, null);
 
-        // We initialize a new JsonObjectRequest by specifying it's a GET request, the URL we request,
-        // the JSON we send (null because GET request), what to do onResponse and what to do onErrorResponse.
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            // we get the data array of the json object response
-                            JSONArray jsonArray = response.getJSONArray("data");
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                // we get each string element of the array
-                                String nomGroupe = jsonArray.getString(i);
-                                // we push the element on the nomsGroupes arrayList
-                                nomsGroupes.add(nomGroupe);
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
 
-                                // test display in a textview
-                                txtJson.setText("Liste des groupes :");
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
-            }
-        });
+        JsonApiGroupe jsonApiGroupe = retrofit.create(JsonApiGroupe.class);
 
-        // we add the request to the request queue
-        mQueue.add(request);
+        Call<ListeGroupe> callableResponse = jsonApiGroupe.getListe();
+
+        try {
+            // we try to execute the HTTP GET call to receive the JSON, converted as a ListeGroupe object
+            Response<ListeGroupe> response = callableResponse.execute();
+            listeGroupe = response.body();
+
+            // log to check if we getted the list
+            Log.i(TAG_CALL_LISTE, listeGroupe.toString());
+
+            // we push the band name on the nomsGroupes arrayList
+            nomsGroupes.addAll(listeGroupe.data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // stop to show the ProgressDialog and pass the recyclerView
+        publishProgress(false, recyclerViewNomsGroupes);
+    }
+
+    /**
+     * method executed on the main thread, as a response to what we do in
+     * jsonParseRetrofit method which use the @Background annotation
+     * @param progress
+     * @param recyclerViewNomsGroupes
+     */
+    @UiThread
+    public void publishProgress(boolean progress, RecyclerView recyclerViewNomsGroupes) {
+        if (progress) {
+            progressDialog = ProgressDialog.show(this, "Chargement",
+                    "Récupération de la liste des groupes...", true);
+        } else {
+            // remove progress dialog
+            progressDialog.dismiss();
+
+            //  call the constructor of CustomAdapter to send the reference and data to Adapter
+            CustomAdapterFestival customAdapterFestival = new CustomAdapterFestival(MainActivity.this, nomsGroupes);
+            recyclerViewNomsGroupes.setAdapter(customAdapterFestival);  // set the Adapter to RecyclerView
+        }
     }
 }

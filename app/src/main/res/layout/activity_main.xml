@@ -8,7 +8,7 @@
 
     <TextView
         android:id="@+id/tvJsonItem"
-        android:text="Application Festival"
+        android:text="Liste des groupes :"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
