@@ -1,12 +1,18 @@
 package com.example.applicationfestival;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -31,6 +37,7 @@ public class DetailGroupe extends AppCompatActivity {
     TextView star;
     ImageView imgGroupeIv;
     TextView textePresentationTv;
+    String scene;
     TextView sceneTv;
     TextView dateTv;
     String nomGroupe;
@@ -38,9 +45,12 @@ public class DetailGroupe extends AppCompatActivity {
     String urlWebPage;
     Button webPageBtn;
     Button favoriBtn;
+    int time;
     Context context;
     SharedPreferences pref;
     SharedPreferences.Editor editor;
+    final String CHANNEL_ID = "FavoriteBandChannel";
+    NotificationCompat.Builder builder;
 
     private RequestQueue mQueue;
 
@@ -49,6 +59,7 @@ public class DetailGroupe extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_groupe);
         context = getApplicationContext();
+        createNotificationChannel();
 
         // get the shared preferences for getting the favorites bands (key:value mechanism)
         pref = getApplicationContext().getSharedPreferences("favoritesBands", 0);
@@ -70,6 +81,8 @@ public class DetailGroupe extends AppCompatActivity {
 
         // show the star, full or empty depending if the band is in favorite
         showStar();
+        // set the text of the favorite button depending if the band is in favorite
+        libelleFavoriteBtnOnCreate();
 
         // Initializing a new request queue
         mQueue = Volley.newRequestQueue(this);
@@ -102,10 +115,13 @@ public class DetailGroupe extends AppCompatActivity {
                             textePresentationTv.setText(infosGroupe.getString("texte"));
                             // info about the scene
                             sceneTv.setText("Scène : " + infosGroupe.getString("scene"));
+                            scene = infosGroupe.getString("scene");
                             // we set the TextView for the date of the concert
                             dateTv.setText("Le " + infosGroupe.getString("jour") + " à " + infosGroupe.getString("heure"));
                             // we get the url of the webpage of the band
                             urlWebPage = infosGroupe.getString("web");
+                            // we get the time that represent when the band play
+                            time = infosGroupe.getInt("time");
                             // we make the button clickable after we get the url web page, if there is one
                             if (!urlWebPage.isEmpty()) {
                                 webPageBtn.setClickable(true);
@@ -154,6 +170,23 @@ public class DetailGroupe extends AppCompatActivity {
             this.favoriBtn.setText("Retirer des favoris");
             this.star.setText("⭐");
             Toast.makeText(context, nomArtiste+" ajouté aux favoris", Toast.LENGTH_SHORT).show();
+
+            // Set the Notification information
+            builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setContentTitle(nomArtiste+" bientôt en scène!!!")
+                    .setContentText("Le groupe" + nomArtiste + " va bientôt monter sur la scène " + scene + " !")
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+            // Handler to delay the moment when we send the notification
+            Handler handler = new Handler();
+            handler.postDelayed(() -> {
+                // Launch Notification
+                NotificationManagerCompat managerCompat = NotificationManagerCompat.from(DetailGroupe.this);
+                managerCompat.notify(1, builder.build());
+                // show a toaster
+                Toast.makeText(context, nomArtiste+" bientôt en scène!!!", Toast.LENGTH_SHORT).show();
+            }, time * 1000L);
         }
     }
 
@@ -166,4 +199,32 @@ public class DetailGroupe extends AppCompatActivity {
             this.star.setText("☆");
         }
     }
+
+    // method to set the label of the favorite button at the start of the activity, depending on the favorite status
+    private void libelleFavoriteBtnOnCreate() {
+        if (this.pref.getBoolean(nomGroupe, false)) {
+            this.favoriBtn.setText("Retirer des favoris");
+        } else {
+            this.favoriBtn.setText("Ajouter en favori");
+        }
+    }
+
+    // necessary creation of a NotificationChannel for using the Notification
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Favori";
+            String description = "Channel destiné à afficher les notifications concernant les prochains concerts des groupes en favori";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+
 }
