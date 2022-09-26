@@ -86,7 +86,6 @@ public class DetailGroupe extends AppCompatActivity {
 
         // Initializing a new request queue
         mQueue = Volley.newRequestQueue(this);
-        // Glide.with(this).load(urlImage).into(imgGroupe);
         // Perform a GET request to parse the JSON
         jsonParse(context);
     }
