@@ -14,10 +14,10 @@ import java.util.ArrayList;
 
 public class CustomAdapterFestival extends RecyclerView.Adapter<CustomAdapterFestival.MyViewHolder> {
 
-    ArrayList<String> nomsGroupes;
+    ArrayList<InfosGroupePartial> nomsGroupes;
     Context context;
 
-    public CustomAdapterFestival(Context context, ArrayList<String> nomsGroupes) {
+    public CustomAdapterFestival(Context context, ArrayList<InfosGroupePartial> nomsGroupes) {
         this.context = context;
         this.nomsGroupes = nomsGroupes;
     }
@@ -26,22 +26,21 @@ public class CustomAdapterFestival extends RecyclerView.Adapter<CustomAdapterFes
     public CustomAdapterFestival.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // infalte the item Layout
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.rowlayoutnomsgroupes, parent, false);
-        CustomAdapterFestival.MyViewHolder vh = new CustomAdapterFestival.MyViewHolder(v); // pass the view to View Holder
-        return vh;
+        return new MyViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(CustomAdapterFestival.MyViewHolder holder, final int position) {
         // set the data in items
-        holder.nomGroupe.setText(nomsGroupes.get(position));
+        holder.nomGroupe.setText(nomsGroupes.get(position).getNomComplet());
         // implement setOnClickListener event on item view.
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // TODO : rediriger vers une nouvelle vue dans laquelle on passe un itent avec le nom du groupe
                 Intent intent = new Intent(context, DetailGroupe.class);
-                intent.putExtra("nom_groupe", nomsGroupes.get(position));
-                intent.putExtra("position", nomsGroupes.get(position));
+                intent.putExtra("nom_groupe", nomsGroupes.get(position).getNomJson());
+                intent.putExtra("position", position);
                 view.getContext().startActivity(intent);
             }
         });

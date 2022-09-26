@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // get the shared preferences for getting the favorites bands (key:value mechanism)
+        // get the shared preferences (key:value mechanism)
         pref = getApplicationContext().getSharedPreferences("favoritesBands", 0);
         editor = pref.edit();
 
@@ -87,9 +87,8 @@ public class MainActivity extends AppCompatActivity {
 
         // stop to show the ProgressDialog and pass the recyclerView
         publishProgress(false);
-        //
+        // retrieve the data from the API or use the cached value if they exists
         initDataOrUseCachedValue();
-        // showListGroupe();
     }
 
     /**
@@ -109,33 +108,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Méthode qui détermine si on doit faire un appel à l'API pour obtenir toutes les infos en JSON
-     * des groupes, ou si l'on peut utiliser les valeurs sauvegardés dans les SharedPreferences
+     * Method that determines if we have to make a call to the API to get all the JSON information
+     * of the groups, or if we can use the values saved in the SharedPreferences
      */
     @UiThread
     public void initDataOrUseCachedValue() {
-        // si la valeur de cette SharedPreference est vide, alors on fait l'appel à l'API
+        // if the value of this SharedPreference is empty, then we call the API
         if (this.pref.getString("diesel-groove-fullName", "").isEmpty()) {
             jsonParseAllBand();
+            // show the list of the musical bands, with a RecyclerView
+            showListGroupe();
         } else {
-            // sinon on alimente le tableau infosGroupePartial
-            // TODO :  alimenter le tableau infosGroupePartial et l'envoyer à la RecyclerView
+            // else we set the list of infosGroupePartial
+            setInfosGroupePartialWithCachedValues();
             showListGroupe();
         }
     }
 
     /**
-     * Récupère toutes les infos de tous les groupes
-     * Cette méthode ne sera lancée qu'une seule fois, au premier lancement de l'appli, ou si le cache a été vidé
+     * Retrieves all the info from all the bands.
+     * This method will be launched only once, at the first launch of the application, or if the cache has been cleared
      */
     @Background
     public void jsonParseAllBand() {
         // start to show the ProgressDialog
         publishProgress(true);
 
-        // Pour tous les noms de groupe récupérés, on va faire un appel GET pour obtenir les infos
-        // individuelles de chaque groupe, ce qui fait que le chargement est un peu long au premier
-        // lancement de l'application
+        // For all the group names retrieved, we will make a GET call to get the individual info
+        // of each band, which makes the loading a bit long at the first launch of the application
         for (String nomGroupe : nomsGroupes) {
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
@@ -149,18 +149,18 @@ public class MainActivity extends AppCompatActivity {
                 // we try to execute the HTTP GET call to receive the JSON, converted as a ListeGroupe object
                 Response<InfosGroupe> response = callableResponse.execute();
 
-                // on récupère les infos du groupe
+                // we get the band's information
                 InfosGroupe infosGroupe = response.body();
                 if (infosGroupe != null) {
-                    // on pousse les infos dans une liste contenant une partie des infos de tous les groupes
+                    // we add the infos on a list containing a part of the infos of all bands
                     allInfosGroupesPartial.add(
                             new InfosGroupePartial(nomGroupe,
                                     infosGroupe.getData().getArtiste(),
                                     infosGroupe.getData().getScene(),
                                     infosGroupe.getData().getJour())
                     );
-                    // On créé 4 SharedPreferences par groupes, qui nous seront utiles pour ne pas appeler de nouveau cette méthode
-                    // ajout du nom complet du groupe dans les sharedPreference
+                    // We create 4 SharedPreferences by groups, which will be useful to not to call again this method
+                    // adding the  fullname of the band in a sharedPreference
                     editor.putString(nomGroupe + "-fullName", infosGroupe.getData().getArtiste());
                     // adding the JSON name of the band in a sharedPreference
                     editor.putString(nomGroupe + "-json", nomGroupe);
@@ -182,15 +182,23 @@ public class MainActivity extends AppCompatActivity {
 
         // stop to show the ProgressDialog and pass the recyclerView
         publishProgress(false);
-        // affiche la liste des groupes de musique
-        showListGroupe();
     }
 
     @UiThread
     public void showListGroupe() {
         //  call the constructor of CustomAdapter to send the reference and data to Adapter
-        customAdapterFestival = new CustomAdapterFestival(MainActivity.this, nomsGroupes);
+        customAdapterFestival = new CustomAdapterFestival(MainActivity.this, allInfosGroupesPartial);
         recyclerViewNomsGroupes.setAdapter(customAdapterFestival);  // set the Adapter to RecyclerView
     }
 
+    public void setInfosGroupePartialWithCachedValues() {
+        for(String nomGroupe : nomsGroupes) {
+            allInfosGroupesPartial.add(new InfosGroupePartial(
+                    this.pref.getString(nomGroupe+"-json", ""),
+                    this.pref.getString(nomGroupe+"-fullName", ""),
+                    this.pref.getString(nomGroupe+"-scene", ""),
+                    this.pref.getString(nomGroupe+"-jour", ""))
+            );
+        }
+    }
 }
