@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ApplicationFestival">
         <activity
-            android:name=".DetailGroupe"
+            android:name=".DetailGroupe_"
             android:exported="false" />
         <activity
             android:name=".MainActivity_"

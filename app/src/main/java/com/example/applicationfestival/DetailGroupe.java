@@ -1,11 +1,8 @@
 package com.example.applicationfestival;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,17 +16,24 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
 import com.bumptech.glide.Glide;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.androidannotations.annotations.Background;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.UiThread;
 
+import java.io.IOException;
+
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+@EActivity
 public class DetailGroupe extends AppCompatActivity {
 
     TextView nomArtisteTv;
@@ -41,18 +45,19 @@ public class DetailGroupe extends AppCompatActivity {
     TextView sceneTv;
     TextView dateTv;
     String nomGroupe;
-    String urlImage;
     String urlWebPage;
     Button webPageBtn;
     Button favoriBtn;
     int time;
+
     Context context;
+    ProgressDialog progressDialog;
     SharedPreferences pref;
     SharedPreferences.Editor editor;
     final String CHANNEL_ID = "FavoriteBandChannel";
     NotificationCompat.Builder builder;
 
-    private RequestQueue mQueue;
+    private final String BASE_URL = "https://daviddurand.info/D228/festival/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,64 +88,91 @@ public class DetailGroupe extends AppCompatActivity {
         showStar();
         // set the text of the favorite button depending if the band is in favorite
         libelleFavoriteBtnOnCreate();
-
-        // Initializing a new request queue
-        mQueue = Volley.newRequestQueue(this);
-        // Perform a GET request to parse the JSON
-        jsonParse(context);
+        // Perform a GET request to get the infos about the band
+        jsonParseRetrofit();
     }
 
-    private void jsonParse(Context context) {
-        // URL API of a specific group
-        String url = "https://daviddurand.info/D228/festival/info/" + nomGroupe;
+    /**
+     * Task executed in background, in a thread, thanks to the @Background annotation.
+     * Retrieve the information of the band with a GET call to the API
+     */
+    @Background
+    public void jsonParseRetrofit() {
+        // start to show the ProgressDialog
+        publishProgress(true);
 
-        // We initialize a new JsonObjectRequest by specifying it's a GET request, the URL we request,
-        // the JSON we send (null because GET request), what to do onResponse and what to do onErrorResponse.
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            // we get the data object of the json object response
-                            JSONObject infosGroupe = response.getJSONObject("data");
-                            // we set the value of the TextViews with the corresponding key
-                            nomArtisteTv.setText(infosGroupe.getString("artiste"));
-                            nomArtiste = infosGroupe.getString("artiste");
-                            // url with the image of the band
-                            urlImage = "https://daviddurand.info/D228/festival/illustrations/" + nomGroupe + "/image.jpg";
-                            // display the image of the band with url previously reached
-                            Glide.with(context).load(urlImage).into(imgGroupeIv);
-                            // we set the TextView for the info about the band
-                            textePresentationTv.setText(infosGroupe.getString("texte"));
-                            // info about the scene
-                            sceneTv.setText("Scène : " + infosGroupe.getString("scene"));
-                            scene = infosGroupe.getString("scene");
-                            // we set the TextView for the date of the concert
-                            dateTv.setText("Le " + infosGroupe.getString("jour") + " à " + infosGroupe.getString("heure"));
-                            // we get the url of the webpage of the band
-                            urlWebPage = infosGroupe.getString("web");
-                            // we get the time that represent when the band play
-                            time = infosGroupe.getInt("time");
-                            // we make the button clickable after we get the url web page, if there is one
-                            if (!urlWebPage.isEmpty()) {
-                                webPageBtn.setClickable(true);
-                                webPageBtn.setVisibility(View.VISIBLE);
-                            } else { // else we hide the button
-                                webPageBtn.setVisibility(View.INVISIBLE);
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        JsonApiGroupe jsonApiGroupe = retrofit.create(JsonApiGroupe.class);
+        Call<InfosGroupe> callableResponse = jsonApiGroupe.getInfosGroupe(nomGroupe);
+
+        try {
+            // we try to execute the HTTP GET call to receive the JSON, converted as a ListeGroupe object
+            Response<InfosGroupe> response = callableResponse.execute();
+
+            // we get the band's information
+            InfosGroupe infosGroupe = response.body();
+            if (infosGroupe != null) {
+                // get the name of the artist/band
+                nomArtiste = infosGroupe.getData().getArtiste();
+                // get the type of scene where the band is gonna play
+                scene = infosGroupe.getData().getScene();
+                // we get the url of the webpage of the band
+                urlWebPage = infosGroupe.getData().getWeb();
+                // we get the time that represent when the band play
+                time = infosGroupe.getData().getTime();
+                // display the image and the text infos of the band in the ImageView and TextViews
+                loadImageAndText(infosGroupe);
             }
-        });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        // we add the request to the request queue
-        mQueue.add(request);
+        // dismiss the progress dialog
+        publishProgress(false);
+    }
+
+    /**
+     * method executed on the main thread, as a response to what we do in
+     * jsonParseRetrofit method which use the @Background annotation
+     * @param progress
+     */
+    @UiThread
+    public void publishProgress(boolean progress) {
+        if (progress) {
+            progressDialog = ProgressDialog.show(this, "Chargement",
+                    "Récupération des informations du groupe...", true);
+        } else {
+            // remove progress dialog
+            progressDialog.dismiss();
+        }
+    }
+
+    @UiThread
+    public void loadImageAndText(InfosGroupe infosGroupe) {
+        // url of the image
+        String urlImage = "https://daviddurand.info/D228/festival/illustrations/" + nomGroupe + "/image.jpg";
+        // we put the image on the ImageView
+        Glide.with(context).load(urlImage).into(imgGroupeIv);
+        // we set the value of the TextViews with the corresponding key
+        nomArtisteTv.setText(infosGroupe.getData().getArtiste());
+        // we set the TextView for the info about the band
+        textePresentationTv.setText(infosGroupe.getData().getTexte());
+        // we set the TextView with info about the scene
+        sceneTv.setText("Scène : " + infosGroupe.getData().getScene());
+        // we set the TextView with info about when the band play on scene
+        dateTv.setText("Le " + infosGroupe.getData().getJour() + " à " + infosGroupe.getData().getHeure());
+
+        // we make the button clickable and visible after we get the url web page, if there is one
+        if (!urlWebPage.isEmpty()) {
+            webPageBtn.setClickable(true);
+            webPageBtn.setVisibility(View.VISIBLE);
+        } else { // else we hide the button
+            webPageBtn.setVisibility(View.INVISIBLE);
+        }
     }
 
     // go to the web page of the band
@@ -224,6 +256,4 @@ public class DetailGroupe extends AppCompatActivity {
             notificationManager.createNotificationChannel(channel);
         }
     }
-
-
 }

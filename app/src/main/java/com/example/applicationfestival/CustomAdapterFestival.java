@@ -54,7 +54,7 @@ public class CustomAdapterFestival extends RecyclerView.Adapter<CustomAdapterFes
             @Override
             public void onClick(View view) {
                 // TODO : rediriger vers une nouvelle vue dans laquelle on passe un itent avec le nom du groupe
-                Intent intent = new Intent(context, DetailGroupe.class);
+                Intent intent = new Intent(context, DetailGroupe_.class);
                 intent.putExtra("nom_groupe", nomsGroupes.get(position).getNomJson());
                 intent.putExtra("position", position);
                 view.getContext().startActivity(intent);
