@@ -4,6 +4,11 @@ import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -22,7 +27,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 @EActivity
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     // ArrayList for group names
     ArrayList<String> nomsGroupes = new ArrayList<>();
@@ -32,6 +37,10 @@ public class MainActivity extends AppCompatActivity {
     CustomAdapterFestival customAdapterFestival;
     ProgressDialog progressDialog;
     ListeGroupe listeGroupe;
+    Spinner spinnerScene;
+    Spinner spinnerJour;
+    String sceneSelected = "toutes";
+    String jourSelected = "tous";
     SharedPreferences pref;
     SharedPreferences.Editor editor;
 
@@ -47,13 +56,29 @@ public class MainActivity extends AppCompatActivity {
         pref = getApplicationContext().getSharedPreferences("favoritesBands", 0);
         editor = pref.edit();
 
+        // we set the Spinner for the selection of the scene
+        spinnerScene = findViewById(R.id.spinner);
+        ArrayAdapter<CharSequence> adapterSpinnerScene = ArrayAdapter.createFromResource(this,
+                R.array.scene_spinner, android.R.layout.simple_spinner_item);
+        adapterSpinnerScene.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerScene.setAdapter(adapterSpinnerScene);
+        spinnerScene.setOnItemSelectedListener(this);
+
+        // we set the Spinner fot the selection of the day
+        spinnerJour = findViewById(R.id.spinnerJour);
+        ArrayAdapter<CharSequence> adapterSpinnerJour = ArrayAdapter.createFromResource(this,
+                R.array.jour_spinner, android.R.layout.simple_spinner_item);
+        adapterSpinnerJour.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerJour.setAdapter(adapterSpinnerJour);
+        spinnerJour.setOnItemSelectedListener(this);
+
         // get the reference of RecyclerView
         recyclerViewNomsGroupes = findViewById(R.id.recyclerViewNomsGroupes);
         // set a LinearLayoutManager with default vertical orientation
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerViewNomsGroupes.setLayoutManager(linearLayoutManager);
 
-        // Perform a GET request to parse the JSON
+        // Perform a GET request to get the String List containing the band name in Kebab case format
         jsonParseRetrofit();
     }
 
@@ -191,7 +216,9 @@ public class MainActivity extends AppCompatActivity {
         recyclerViewNomsGroupes.setAdapter(customAdapterFestival);  // set the Adapter to RecyclerView
     }
 
+    // method used to set the List with the band's information with cached values stored
     public void setInfosGroupePartialWithCachedValues() {
+        // for each band, we reach the SharedPreferences corresponding to this band and we pass them to the List
         for(String nomGroupe : nomsGroupes) {
             allInfosGroupesPartial.add(new InfosGroupePartial(
                     this.pref.getString(nomGroupe+"-json", ""),
@@ -200,5 +227,25 @@ public class MainActivity extends AppCompatActivity {
                     this.pref.getString(nomGroupe+"-jour", ""))
             );
         }
+    }
+
+    // method called when an item is selected on a Spinner
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        if (customAdapterFestival != null) {
+            if (parent.getId() == spinnerScene.getId()) {
+                sceneSelected = parent.getItemAtPosition(position).toString();
+            } else {
+                jourSelected = parent.getItemAtPosition(position).toString();
+            }
+            CharSequence filter = sceneSelected + " " + jourSelected;
+            customAdapterFestival.getFilter().filter(filter);
+        }
+    }
+
+    // method called when nothing is selected on the Spinner
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
     }
 }

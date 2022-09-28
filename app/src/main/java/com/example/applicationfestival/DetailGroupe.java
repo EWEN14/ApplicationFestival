@@ -204,9 +204,9 @@ public class DetailGroupe extends AppCompatActivity {
 
             // Set the Notification information
             builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setSmallIcon(R.drawable.ic_baseline_library_music_24)
                     .setContentTitle(nomArtiste+" bientôt en scène!!!")
-                    .setContentText("Le groupe" + nomArtiste + " va bientôt monter sur la scène " + scene + " !")
+                    .setContentText("Le groupe " + nomArtiste + " va bientôt monter sur la scène " + scene + " !")
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
             // Handler to delay the moment when we send the notification

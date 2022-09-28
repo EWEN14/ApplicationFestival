@@ -6,20 +6,25 @@ import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class CustomAdapterFestival extends RecyclerView.Adapter<CustomAdapterFestival.MyViewHolder> {
+public class CustomAdapterFestival extends RecyclerView.Adapter<CustomAdapterFestival.MyViewHolder> implements Filterable {
 
     ArrayList<InfosGroupePartial> nomsGroupes;
+    ArrayList<InfosGroupePartial> nomsGroupesFull;
     Context context;
 
     public CustomAdapterFestival(Context context, ArrayList<InfosGroupePartial> nomsGroupes) {
         this.context = context;
         this.nomsGroupes = nomsGroupes;
+        this.nomsGroupesFull = new ArrayList<>(nomsGroupes);
     }
 
     @Override
@@ -79,4 +84,65 @@ public class CustomAdapterFestival extends RecyclerView.Adapter<CustomAdapterFes
             favoriteStatus = itemView.findViewById(R.id.favoriteStatus);
         }
     }
+
+    // methos used for filtering the list of band
+    @Override
+    public Filter getFilter() {
+        return listeGroupeFiltree;
+    }
+
+    private final Filter listeGroupeFiltree = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            ArrayList<InfosGroupePartial> filteredList = new ArrayList<>();
+
+            // our constraint contain the scene and the day in a single CharSequence, so we have
+            // to make it a String and split the String to the space character to get the two filtering element
+            String[] constaintSplitStr = constraint.toString().split(" ");
+            String sceneSelected = constaintSplitStr[0];
+            String jourSelected = constaintSplitStr[1];
+
+            // if all scenes and days are selected, then we kept the whole list of band
+            if (sceneSelected.equals("toutes") && jourSelected.equals("tous")) {
+                filteredList.addAll(nomsGroupesFull);
+            } else {
+                // if the all day are selected, then we only filter on the scene
+                if (jourSelected.equals("tous")) {
+                    for (InfosGroupePartial band : nomsGroupesFull) {
+                        if (band.getScene().equals(sceneSelected)) {
+                            filteredList.add(band);
+                        }
+                    }
+                } // on the opposite, we only filter on the day when all scenes are selected
+                else if (sceneSelected.equals("toutes")) {
+                    for (InfosGroupePartial band : nomsGroupesFull) {
+                        if (band.getJour().equals(jourSelected)) {
+                            filteredList.add(band);
+                        }
+                    }
+                } // else, we filter both on the scene and the day selected
+                else {
+                    for (InfosGroupePartial band : nomsGroupesFull) {
+                        if (band.getJour().equals(jourSelected) && band.getScene().equals(sceneSelected)) {
+                            filteredList.add(band);
+                        }
+                    }
+                }
+                // String sceneSelected = constraint.toString();
+            }
+
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+
+            // return the filtered list of bands
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            nomsGroupes.clear();
+            nomsGroupes.addAll((List) results.values);
+            notifyDataSetChanged();
+        }
+    };
 }

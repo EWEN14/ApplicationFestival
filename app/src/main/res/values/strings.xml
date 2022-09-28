@@ -1,4 +1,16 @@
 <resources>
     <string name="app_name">ApplicationFestival</string>
     <string name="voir_page_facebook">Voir page Web</string>
+
+    <string-array name="scene_spinner">
+        <item>toutes</item>
+        <item>acoustique</item>
+        <item>amplifiée</item>
+    </string-array>
+
+    <string-array name="jour_spinner">
+        <item>tous</item>
+        <item>Vendredi</item>
+        <item>Samedi</item>
+    </string-array>
 </resources>

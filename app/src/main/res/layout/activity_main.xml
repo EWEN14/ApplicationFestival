@@ -7,9 +7,43 @@
     tools:context=".MainActivity">
 
     <TextView
+        android:id="@+id/sceneLabel"
+        android:text="Scène"
+        android:textSize="20sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/jourLabel"
+        android:text="Jour"
+        android:textSize="20sp"
+        android:layout_marginStart="150dp"
+        android:layout_width="wrap_content"
+        android:layout_toEndOf="@id/sceneLabel"
+        android:layout_height="wrap_content"/>
+
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="wrap_content"
+        android:textSize="20sp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/sceneLabel"/>
+
+    <Spinner
+        android:id="@+id/spinnerJour"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/spinner"
+        android:textSize="20sp"
+        android:layout_marginStart="50dp"
+        android:layout_below="@id/sceneLabel"/>
+
+    <TextView
         android:id="@+id/tvJsonItem"
         android:text="Liste des groupes :"
         android:layout_width="wrap_content"
+        android:layout_below="@id/spinner"
+        android:layout_marginTop="30dp"
         android:layout_height="wrap_content"/>
 
     <androidx.recyclerview.widget.RecyclerView
