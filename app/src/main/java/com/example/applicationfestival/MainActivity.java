@@ -1,6 +1,8 @@
 package com.example.applicationfestival;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,9 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,7 +27,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 @EActivity
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class MainActivity extends Activity implements AdapterView.OnItemSelectedListener {
 
     // ArrayList for group names
     ArrayList<String> nomsGroupes = new ArrayList<>();
@@ -247,5 +247,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
 
+    }
+
+    // method called when we came back from the activity that show the details of a band
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // we set the spinner to the "toutes" and "tous" values
+        spinnerScene.setSelection(0);
+        spinnerJour.setSelection(0);
+        // we refresh the list, to update the star status if the user add a band in favorite
+        setInfosGroupePartialWithCachedValues();
+        showListGroupe();
     }
 }

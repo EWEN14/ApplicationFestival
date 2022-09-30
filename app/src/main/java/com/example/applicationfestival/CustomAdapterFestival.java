@@ -1,5 +1,6 @@
 package com.example.applicationfestival;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -62,7 +63,7 @@ public class CustomAdapterFestival extends RecyclerView.Adapter<CustomAdapterFes
                 Intent intent = new Intent(context, DetailGroupe_.class);
                 intent.putExtra("nom_groupe", nomsGroupes.get(position).getNomJson());
                 intent.putExtra("position", position);
-                view.getContext().startActivity(intent);
+                ((Activity) context).startActivityForResult(intent,1);
             }
         });
     }
