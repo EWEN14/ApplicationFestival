@@ -141,8 +141,6 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
         // if the value of this SharedPreference is empty, then we call the API
         if (this.pref.getString("diesel-groove-fullName", "").isEmpty()) {
             jsonParseAllBand();
-            // show the list of the musical bands, with a RecyclerView
-            showListGroupe();
         } else {
             // else we set the list of infosGroupePartial
             setInfosGroupePartialWithCachedValues();
@@ -177,6 +175,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
                 // we get the band's information
                 InfosGroupe infosGroupe = response.body();
                 if (infosGroupe != null) {
+                    allInfosGroupesPartial = new ArrayList<>();
                     // we add the infos on a list containing a part of the infos of all bands
                     allInfosGroupesPartial.add(
                             new InfosGroupePartial(nomGroupe,
@@ -207,6 +206,8 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 
         // stop to show the ProgressDialog and pass the recyclerView
         publishProgress(false);
+        // show the list of the musical bands, with a RecyclerView
+        showListGroupe();
     }
 
     @UiThread
@@ -218,6 +219,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 
     // method used to set the List with the band's information with cached values stored
     public void setInfosGroupePartialWithCachedValues() {
+        allInfosGroupesPartial = new ArrayList<>();
         // for each band, we reach the SharedPreferences corresponding to this band and we pass them to the List
         for(String nomGroupe : nomsGroupes) {
             allInfosGroupesPartial.add(new InfosGroupePartial(
