@@ -21,6 +21,8 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.bumptech.glide.Glide;
+import com.example.applicationfestival.api.JsonApiGroupe;
+import com.example.applicationfestival.model.InfosGroupe;
 
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EActivity;

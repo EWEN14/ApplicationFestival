@@ -14,6 +14,11 @@ import android.widget.Spinner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.applicationfestival.api.JsonApiGroupe;
+import com.example.applicationfestival.model.InfosGroupe;
+import com.example.applicationfestival.model.InfosGroupePartial;
+import com.example.applicationfestival.model.ListeGroupe;
+
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.UiThread;
@@ -105,7 +110,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
             // log to check if we getted the list
             Log.i(TAG_CALL_LISTE, listeGroupe.toString());
             // we push the band name on the nomsGroupes arrayList
-            nomsGroupes.addAll(listeGroupe.data);
+            nomsGroupes.addAll(listeGroupe.getData());
         } catch (IOException e) {
             e.printStackTrace();
         }

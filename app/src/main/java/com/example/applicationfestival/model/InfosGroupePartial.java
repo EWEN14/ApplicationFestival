@@ -1,4 +1,4 @@
-package com.example.applicationfestival;
+package com.example.applicationfestival.model;
 
 public class InfosGroupePartial {
 

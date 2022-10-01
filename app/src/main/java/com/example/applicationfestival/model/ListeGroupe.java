@@ -1,4 +1,4 @@
-package com.example.applicationfestival;
+package com.example.applicationfestival.model;
 
 import java.util.List;
 

@@ -13,6 +13,8 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.applicationfestival.model.InfosGroupePartial;
+
 import java.util.ArrayList;
 import java.util.List;
 
