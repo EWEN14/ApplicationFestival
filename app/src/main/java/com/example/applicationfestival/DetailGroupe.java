@@ -46,7 +46,7 @@ public class DetailGroupe extends AppCompatActivity {
     String scene;
     TextView sceneTv;
     TextView dateTv;
-    String nomGroupe;
+    String nomGroupeKebabCase;
     String urlWebPage;
     Button webPageBtn;
     Button favoriBtn;
@@ -84,7 +84,7 @@ public class DetailGroupe extends AppCompatActivity {
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
 
-        nomGroupe = extras.getString("nom_groupe");
+        nomGroupeKebabCase = extras.getString("nom_groupe");
 
         // show the star, full or empty depending if the band is in favorite
         showStar();
@@ -109,7 +109,7 @@ public class DetailGroupe extends AppCompatActivity {
                 .build();
 
         JsonApiGroupe jsonApiGroupe = retrofit.create(JsonApiGroupe.class);
-        Call<InfosGroupe> callableResponse = jsonApiGroupe.getInfosGroupe(nomGroupe);
+        Call<InfosGroupe> callableResponse = jsonApiGroupe.getInfosGroupe(nomGroupeKebabCase);
 
         try {
             // we try to execute the HTTP GET call to receive the JSON, converted as a ListeGroupe object
@@ -156,7 +156,7 @@ public class DetailGroupe extends AppCompatActivity {
     @UiThread
     public void loadImageAndText(InfosGroupe infosGroupe) {
         // url of the image
-        String urlImage = "https://daviddurand.info/D228/festival/illustrations/" + nomGroupe + "/image.jpg";
+        String urlImage = "https://daviddurand.info/D228/festival/illustrations/" + nomGroupeKebabCase + "/image.jpg";
         // we put the image on the ImageView
         Glide.with(context).load(urlImage).into(imgGroupeIv);
         // we set the value of the TextViews with the corresponding key
@@ -187,8 +187,8 @@ public class DetailGroupe extends AppCompatActivity {
     // add or remove the band from the favorite
     public void favoriClick(View view) {
         // if already in favorite, we remove the band from favorite
-        if (this.pref.getBoolean(nomGroupe, false)) {
-            this.editor.putBoolean(nomGroupe, false);
+        if (this.pref.getBoolean(nomGroupeKebabCase, false)) {
+            this.editor.putBoolean(nomGroupeKebabCase, false);
             // save changes
             editor.commit();
             // change button text and star
@@ -198,7 +198,7 @@ public class DetailGroupe extends AppCompatActivity {
             Toast.makeText(context, nomArtiste+" retiré des favori", Toast.LENGTH_SHORT).show();
         } else {
             // else we put the band in favorite
-            this.editor.putBoolean(nomGroupe, true);
+            this.editor.putBoolean(nomGroupeKebabCase, true);
             editor.commit();
             this.favoriBtn.setText("Retirer des favoris");
             this.star.setText("⭐");
@@ -226,7 +226,7 @@ public class DetailGroupe extends AppCompatActivity {
     // in the beginning of the activity, we decide which star to put depending if
     // the band is in favorite
     private void showStar() {
-        if (this.pref.getBoolean(nomGroupe, false)) {
+        if (this.pref.getBoolean(nomGroupeKebabCase, false)) {
             this.star.setText("⭐");
         } else {
             this.star.setText("☆");
@@ -235,7 +235,7 @@ public class DetailGroupe extends AppCompatActivity {
 
     // method to set the label of the favorite button at the start of the activity, depending on the favorite status
     private void libelleFavoriteBtnOnCreate() {
-        if (this.pref.getBoolean(nomGroupe, false)) {
+        if (this.pref.getBoolean(nomGroupeKebabCase, false)) {
             this.favoriBtn.setText("Retirer des favoris");
         } else {
             this.favoriBtn.setText("Ajouter en favori");

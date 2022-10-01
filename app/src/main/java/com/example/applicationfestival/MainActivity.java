@@ -95,6 +95,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
         // start to show the ProgressDialog
         publishProgress(true);
 
+        // we build the retrofit request
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -104,7 +105,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
         Call<ListeGroupe> callableResponse = jsonApiGroupe.getListe();
 
         try {
-            // we try to execute the HTTP GET call to receive the JSON, converted as a ListeGroupe object
+            // we try to execute a synchronous call to receive the JSON from the API, converted as a ListeGroupe object
             Response<ListeGroupe> response = callableResponse.execute();
             listeGroupe = response.body();
             // log to check if we getted the list
@@ -162,15 +163,19 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
         // start to show the ProgressDialog
         publishProgress(true);
 
+        allInfosGroupesPartial = new ArrayList<>();
+
+        // were going to use the same retrofit builder for all the call
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        JsonApiGroupe jsonApiGroupe = retrofit.create(JsonApiGroupe.class);
+
         // For all the group names retrieved, we will make a GET call to get the individual info
         // of each band, which makes the loading a bit long at the first launch of the application
         for (String nomGroupe : nomsGroupes) {
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(BASE_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-
-            JsonApiGroupe jsonApiGroupe = retrofit.create(JsonApiGroupe.class);
             Call<InfosGroupe> callableResponse = jsonApiGroupe.getInfosGroupe(nomGroupe);
 
             try {
@@ -180,7 +185,6 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
                 // we get the band's information
                 InfosGroupe infosGroupe = response.body();
                 if (infosGroupe != null) {
-                    allInfosGroupesPartial = new ArrayList<>();
                     // we add the infos on a list containing a part of the infos of all bands
                     allInfosGroupesPartial.add(
                             new InfosGroupePartial(nomGroupe,
@@ -188,7 +192,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
                                     infosGroupe.getData().getScene(),
                                     infosGroupe.getData().getJour())
                     );
-                    // We create 4 SharedPreferences by groups, which will be useful to not to call again this method
+                    // We create 4 SharedPreferences by band, which will be useful to not to call again this method
                     // adding the  fullname of the band in a sharedPreference
                     editor.putString(nomGroupe + "-fullName", infosGroupe.getData().getArtiste());
                     // adding the JSON name of the band in a sharedPreference
@@ -263,8 +267,9 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
         // we set the spinner to the "toutes" and "tous" values
         spinnerScene.setSelection(0);
         spinnerJour.setSelection(0);
-        // we refresh the list, to update the star status if the user add a band in favorite
-        setInfosGroupePartialWithCachedValues();
+        // we refresh the list, to update the star status if the user add (or remove) a band
+        // from the favorites
+        initDataOrUseCachedValue();
         showListGroupe();
     }
 }

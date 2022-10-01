@@ -39,16 +39,14 @@ public class CustomAdapterFestival extends RecyclerView.Adapter<CustomAdapterFes
 
     @Override
     public void onBindViewHolder(CustomAdapterFestival.MyViewHolder holder, final int position) {
-        // set the data in items
-        holder.nomGroupe.setText(nomsGroupes.get(position).getNomComplet());
+        // set the data in items list
+        holder.nomGroupeTv.setText(nomsGroupes.get(position).getNomComplet());
 
         // get the shared preferences for getting the favorites bands (key:value mechanism)
         SharedPreferences pref = context.getApplicationContext().getSharedPreferences("favoritesBands", 0);
 
-        // get the "json formated" name of the group
+        // get the kebab case name of the group
         String nomGroupeSimple = nomsGroupes.get(position).getNomJson();
-        // remove the "-json" at the end of the string
-        nomGroupeSimple.replace("-json","");
 
         // search in the sharedPreferences if the band is in favorite or not
         if (pref.getBoolean(nomGroupeSimple, false)) {
@@ -61,7 +59,6 @@ public class CustomAdapterFestival extends RecyclerView.Adapter<CustomAdapterFes
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO : rediriger vers une nouvelle vue dans laquelle on passe un itent avec le nom du groupe
                 Intent intent = new Intent(context, DetailGroupe_.class);
                 intent.putExtra("nom_groupe", nomsGroupes.get(position).getNomJson());
                 intent.putExtra("position", position);
@@ -76,19 +73,19 @@ public class CustomAdapterFestival extends RecyclerView.Adapter<CustomAdapterFes
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        TextView nomGroupe;// init the item view's
+        TextView nomGroupeTv;// init the item view's
         TextView favoriteStatus;
 
         public MyViewHolder(View itemView) {
             super(itemView);
 
             // get the reference of item view's
-            nomGroupe = itemView.findViewById(R.id.nomGroupe);
+            nomGroupeTv = itemView.findViewById(R.id.nomGroupe);
             favoriteStatus = itemView.findViewById(R.id.favoriteStatus);
         }
     }
 
-    // methos used for filtering the list of band
+    // method used for filtering the list of band
     @Override
     public Filter getFilter() {
         return listeGroupeFiltree;
@@ -109,7 +106,7 @@ public class CustomAdapterFestival extends RecyclerView.Adapter<CustomAdapterFes
             if (sceneSelected.equals("toutes") && jourSelected.equals("tous")) {
                 filteredList.addAll(nomsGroupesFull);
             } else {
-                // if the all day are selected, then we only filter on the scene
+                // if the all days are selected, then we only filter on the scene
                 if (jourSelected.equals("tous")) {
                     for (InfosGroupePartial band : nomsGroupesFull) {
                         if (band.getScene().equals(sceneSelected)) {
