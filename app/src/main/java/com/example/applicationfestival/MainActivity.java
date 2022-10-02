@@ -269,7 +269,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
         spinnerJour.setSelection(0);
         // we refresh the list, to update the star status if the user add (or remove) a band
         // from the favorites
-        initDataOrUseCachedValue();
+        setInfosGroupePartialWithCachedValues();
         showListGroupe();
     }
 }
